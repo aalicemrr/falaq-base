@@ -16,6 +16,12 @@
                     {{ $evento->participantes->contains(auth()->user()) ? 'Cancelar Inscrição' : 'Inscrever-se no Evento' }}
                 </button>
             </form>
+
+            @can('moderate', $evento)
+                <a href="{{ route('eventos.moderacoes.index', $evento) }}" class="btn btn-outline-warning btn-sm">
+                    🛡️ Moderação
+                </a>
+            @endcan
         @endauth
     </div>
     <!-- Formularço de envio de Pergunta -->
@@ -41,6 +47,10 @@
             </form>
         </div>
     </div>
+
+    @error('motivo')
+        <div class="alert alert-danger">{{ $message }}</div>
+    @enderror
 
     <!-- Lista de Perguntas (TICKET #002) -->
     <div class="col-md-7">
@@ -76,6 +86,20 @@
                         <span>Status: <span class="badge bg-success">{{ $pergunta->status }}</span></span>
                         <span>{{ $pergunta->created_at->format('d/m/Y H:i') }}</span>
                     </div>
+
+                    <!-- TICKET #016: Solicitar moderação -->
+                    @auth
+                        <details class="mt-2">
+                            <summary class="small text-warning" style="cursor:pointer;">⚑ Solicitar moderação</summary>
+                            <form action="{{ route('perguntas.moderar', $pergunta) }}" method="POST" class="mt-2 d-flex gap-2">
+                                @csrf
+                                <input type="text" name="motivo" required minlength="10" maxlength="255"
+                                       class="form-control form-control-sm bg-dark text-white border-secondary"
+                                       placeholder="Motivo (10 a 255 caracteres)">
+                                <button type="submit" class="btn btn-sm btn-outline-warning flex-shrink-0">Enviar</button>
+                            </form>
+                        </details>
+                    @endauth
                 </div>
             </div>
         @empty
